@@ -14,12 +14,12 @@ class WelcomePage extends StatelessWidget {
           children: [
             //10.verticalSpace,
             Image.asset(
-              "assets/images/art2.png",
+              "assets/images/art.png",
               width: 1.sw,
-              height: 485.h,
+              height: 455.h,
               fit: BoxFit.fitWidth,
             ),
-            5.verticalSpace,
+            35.verticalSpace,
             SizedBox(
                 width: 235.w,
                 child: const Text(
@@ -60,7 +60,8 @@ class WelcomePage extends StatelessWidget {
 
 
                   ],
-                ))
+                ),),
+
           ],
         ),
       ),
