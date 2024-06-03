@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/custom_text_field.dart';
 import 'package:go_router/go_router.dart';
@@ -14,13 +15,32 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
           children: [
+            Image.asset(
+              "assets/images/art2.png",
+              width: 1.sw,
+              height: 485.h,
+              fit: BoxFit.fitWidth,
+            ),
+            5.verticalSpace,
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Login",
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+
+                    ),
+                  ),
+                ],
+              ),
+            ),
             CustomTextField(
               controller: _phoneNumberController,
               labelText: 'Phone Number',
@@ -30,7 +50,7 @@ class LoginPage extends StatelessWidget {
               labelText: 'Password',
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             BlocConsumer<AuthCubit, AuthState>(
               listener: (context, state) {
                 if (state is AuthLoaded) {
@@ -43,7 +63,7 @@ class LoginPage extends StatelessWidget {
               },
               builder: (context, state) {
                 if (state is AuthLoading) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
                 return ElevatedButton(
                   onPressed: () {
@@ -52,7 +72,7 @@ class LoginPage extends StatelessWidget {
                       _passwordController.text,
                     );
                   },
-                  child: Text('Login'),
+                  child: const Text('Login'),
                 );
               },
             ),
@@ -60,7 +80,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 context.push('/register');
               },
-              child: Text('Register'),
+              child: const Text('Register'),
             ),
           ],
         ),
