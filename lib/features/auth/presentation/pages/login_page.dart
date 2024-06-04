@@ -34,11 +34,11 @@ class LoginPage extends StatelessWidget {
                 child: Column(
 
                   children: [
-                    const Align(
+                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Login",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                        style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
 
                       ),
                     ),
@@ -69,7 +69,6 @@ class LoginPage extends StatelessWidget {
                       decoration:  InputDecoration(
                         hintText: 'Password...',
                         suffixIcon: IconButton(onPressed: (){}, icon:  const Icon(Icons.visibility_outlined,size: 24,color: Colors.grey,)),
-                       //suffix: IconButton(onPressed: (){}, icon:  Icon(Icons.visibility_outlined,size: 24,color: Colors.grey,)),
                       ),
                     )
                   ],
@@ -78,17 +77,17 @@ class LoginPage extends StatelessWidget {
               20.verticalSpace,
               ElevatedButton(
                 onPressed: () {
-                  context.push('/login');
+                  context.go('/todos');
                 },
                 style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(AppTheme.primaryColor),
                     shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                     fixedSize: WidgetStateProperty.all(Size(331.w, 49.h))
                 ),
-                child: const Text(
+                child:  Text(
                   'Sign In',
                   style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.white),
                 ),),
@@ -96,9 +95,11 @@ class LoginPage extends StatelessWidget {
                Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Didn’t have any account? " ,style: TextStyle(fontWeight: FontWeight.w700,fontSize: 14,color: Color(0xFF7F7F7F)), ),
+                  const Text("Didn’t have any account? " ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14,color: Color(0xFF7F7F7F)), ),
                   GestureDetector(
-                      onTap: (){},
+                      onTap: (){
+                        context.push('/register');
+                      },
                       child: const Text("Sign Up here",style: TextStyle(fontWeight: FontWeight.w700,fontSize: 14,color: AppTheme.primaryColor,decoration: TextDecoration.underline,decorationColor: AppTheme.primaryColor), )),
                 ],
               ),

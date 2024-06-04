@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tasky/config/theme/app_theme.dart';
 import '../cubit/todo_cubit.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,12 +11,16 @@ class TodoListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todos'),
+        title: Text('Logo',style: TextStyle(fontSize: 24.sp,fontWeight: FontWeight.w700),),
+        actions: [
+          IconButton(onPressed:(){}, icon: const Icon(Icons.account_circle_outlined ,color: Color(0xFF7F7F7F),size: 24,)),
+          IconButton(onPressed:(){}, icon: const Icon(Icons.logout ,color: AppTheme.primaryColor,size: 24,)),
+        ],
       ),
       body: BlocBuilder<TodoCubit, TodoState>(
         builder: (context, state) {
           if (state is TodoLoading) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (state is TodoLoaded) {
             return ListView.builder(
               itemCount: state.todos.length,
@@ -32,14 +38,14 @@ class TodoListPage extends StatelessWidget {
           } else if (state is TodoFailure) {
             return Center(child: Text(state.message));
           }
-          return Center(child: Text('No Todos'));
+          return const Center(child: Text('No Todos'));
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           context.push('/addTodo');
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -22,17 +22,17 @@ class WelcomePage extends StatelessWidget {
             35.verticalSpace,
             SizedBox(
                 width: 235.w,
-                child: const Text(
+                child: Text(
                   "Task Management & To-Do List",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 )),
             16.verticalSpace,
             SizedBox(
                 width: 235.w,
-                child: const Text(
+                child: Text(
                   "This productive tool is designed to help you better manage your taskproject-wise conveniently!",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
                   textAlign: TextAlign.center,
                 )),
             30.verticalSpace,
@@ -48,10 +48,10 @@ class WelcomePage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                     Text(
                       'Let’s Start',
                       style: TextStyle(
-                          fontSize: 19,
+                          fontSize: 19.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white),
                     ),
