@@ -22,9 +22,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> register(String phoneNumber, String password) async {
     try {
-      // Call the register method from the remote data source
       await remoteDataSource.register(phoneNumber, password);
-      return Right(null); // Registration successful
+      return Right(null);  // هتستقبل هنا ال  displayName  -  access_token -  refresh_token
     } catch (e) {
       return Left(ServerFailure()); // Handle error
     }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFF5F33E1);
-  static const Color secondaryColor = Color(0xFF056EEA);
+  static const Color secondaryColor = Color(0xFFEBE5FF);
   static const Color scaffoldBackgroundColor = Color(0xFFFFFFFF);
 
   static const String fontFamily = 'DM Sans';

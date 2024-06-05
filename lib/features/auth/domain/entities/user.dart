@@ -5,7 +5,7 @@ class User extends Equatable {
   final String phoneNumber;
   final String token;
 
-  User({
+  const User({
     required this.id,
     required this.phoneNumber,
     required this.token,

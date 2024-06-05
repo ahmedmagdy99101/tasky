@@ -2,10 +2,10 @@ import '../../domain/entities/user.dart';
 
 class UserModel extends User {
   UserModel({
-    required String id,
-    required String phoneNumber,
-    required String token,
-  }) : super(id: id, phoneNumber: phoneNumber, token: token);
+    required super.id,
+    required super.phoneNumber,
+    required super.token,
+  });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(

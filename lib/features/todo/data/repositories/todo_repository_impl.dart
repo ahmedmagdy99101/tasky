@@ -25,10 +25,14 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       await remoteDataSource.addTodo(TodoModel(
         id: todo.id,
+        imageUrl: todo.imageUrl,
         title: todo.title,
         description: todo.description,
-        completed: todo.completed,
-        imageUrl: todo.imageUrl,
+        priority: todo.priority,
+        status: todo.status,
+        user: todo.user,
+        createdAt: todo.createdAt,
+        updatedAt: todo.updatedAt,
       ));
       return Right(null);
     } catch (e) {
@@ -41,10 +45,14 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       await remoteDataSource.updateTodo(TodoModel(
         id: todo.id,
+        imageUrl: todo.imageUrl,
         title: todo.title,
         description: todo.description,
-        completed: todo.completed,
-        imageUrl: todo.imageUrl,
+        priority: todo.priority,
+        status: todo.status,
+        user: todo.user,
+        createdAt: todo.createdAt,
+        updatedAt: todo.updatedAt,
       ));
       return Right(null);
     } catch (e) {

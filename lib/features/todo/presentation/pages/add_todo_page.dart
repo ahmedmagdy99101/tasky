@@ -30,12 +30,11 @@ class AddTodoPageState extends State<AddTodoPage> {
     if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
       return;
     }
-    final todo = Todo(
+    final todo = Todo(createdAt: DateTime.now(),
       id: '',
       title: _titleController.text,
       description: _descriptionController.text,
-      completed: false,
-      imageUrl: _image?.path ?? '',
+      imageUrl: _image?.path ?? '', priority: '', status: '', user: '', updatedAt: DateTime.now(),
     );
     context.read<TodoCubit>().addTodo(todo);
     Navigator.pop(context);

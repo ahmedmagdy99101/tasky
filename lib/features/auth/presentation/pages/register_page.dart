@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import '../../../../config/theme/app_theme.dart';
 import '../cubit/auth_cubit.dart';
@@ -20,11 +21,18 @@ class RegisterPage extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  Image.asset(
-                    "assets/images/art.png",
-                    width: 1.sw,
-                    height: 275.h,
-                    fit: BoxFit.fill,
+                  // SvgPicture.asset(
+                  //   'assets/images/art.svg',
+                  //   width: 1.sw,
+                  //   height: 275.h,
+                  // ),
+                  Center(
+                    child: Image.asset(
+                      "assets/images/art.png",
+                      width: 290.w,
+                      height: 300.h,
+                      fit: BoxFit.fill,
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -126,7 +134,7 @@ class RegisterPage extends StatelessWidget {
               15.verticalSpace,
               ElevatedButton(
                 onPressed: () {
-                  context.push('/login');
+
                 },
                 style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(AppTheme.primaryColor),
@@ -147,7 +155,7 @@ class RegisterPage extends StatelessWidget {
                    Text("Already have any account? " ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14.sp,color: const Color(0xFF7F7F7F)), ),
                   GestureDetector(
                       onTap: (){
-                        context.push('/register');
+                        context.push('/login');
                       },
                       child:  Text("Sign in",style: TextStyle(fontWeight: FontWeight.w700,fontSize: 14.sp,color: AppTheme.primaryColor,decoration: TextDecoration.underline,decorationColor: AppTheme.primaryColor), )),
                 ],
