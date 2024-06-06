@@ -1,5 +1,5 @@
-
 import 'package:go_router/go_router.dart';
+import 'package:tasky/storage.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
@@ -10,8 +10,11 @@ import '../../features/todo/presentation/pages/qr_scanner_page.dart';
 import '../../features/todo/presentation/pages/todo_details_page.dart';
 import '../../features/todo/presentation/pages/todo_list_page.dart';
 
-
 final GoRouter router = GoRouter(
+  initialLocation:
+  AppSharedPreferences.sharedPreferences.getString("accessToken") != null
+      ? "/todos"
+      : "/",
   routes: [
     GoRoute(
       path: '/',
@@ -23,7 +26,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => RegisterPage(),
+      builder: (context, state) =>  const RegisterPage(),
     ),
     GoRoute(
       path: '/profile',
@@ -46,7 +49,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/qrScanner',
-      builder: (context, state) => QRScannerPage(),
+      builder: (context, state) =>  QRScannerPage(),
     ),
   ],
 );

@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
+import 'package:tasky/features/auth/data/repositories/auth_repository_impl.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
 
 class LoginUseCase implements UseCase<User, LoginParams> {
-  final AuthRepository repository;
+  final AuthRepositoryImpl repository;
 
   LoginUseCase({required this.repository});
 

@@ -1,8 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:tasky/storage.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String phoneNumber, String password);
-  Future<void> register(String phoneNumber, String password);
+  Future<Map<String, dynamic>> register({
+    required String phoneNumber,
+    required String password,
+    required String displayName,
+    int? experienceYears,
+    String? level,
+    String? address,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -11,25 +24,52 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
+  Future<Map<String, dynamic>> login(
+      String phoneNumber, String password) async {
     final response = await dio.post(
-      'https://your-api-url.com/auth/login',
-      data: {'phoneNumber': phoneNumber, 'password': password},
+      'https://todo.iraqsapp.com/auth/login',
+      data: {"phone": phoneNumber, "password": password},
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
+      debugPrint(response.data);
+      AppSharedPreferences.sharedPreferences
+          .setString("accessToken", response.data["access_token"]);
+      debugPrint(
+          "acsse Token is${AppSharedPreferences.sharedPreferences.getString("accessToken")}");
       return response.data;
     } else {
-      throw Exception('Failed to login');
+      return response.data;
     }
   }
 
   @override
-  Future<void> register(String phoneNumber, String password) async {
-    // Make your HTTP request to register the user
-    // You would typically use dio.post() or a similar method
-    // Example:
-    // await dio.post('/register', data: {'phoneNumber': phoneNumber, 'password': password});
+  Future<Map<String, dynamic>> register({
+    required String phoneNumber,
+    required String password,
+    required String displayName,
+    int? experienceYears,
+    String? level,
+    String? address,
+  }) async {
+    final response = await dio.post(
+      'https://todo.iraqsapp.com/auth/register',
+      data: {
+        "phone": phoneNumber,
+        "password": password,
+        "displayName": displayName,
+        "experienceYears": experienceYears,
+        "address": address,
+        "level": level //fresh , junior , midLevel , senior
+      },
+    );
+    debugPrint("${response.statusCode}");
+    if (response.statusCode == 201) {
+      debugPrint("${response.data}");
+      return response.data;
+    } else {
+      debugPrint("${response.data}");
+      return response.data;
+    }
   }
-
 }

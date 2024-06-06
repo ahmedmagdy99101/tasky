@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -10,9 +11,12 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, User>> login(String phoneNumber, String password) async {
+  Future<Either<Failure, User>> login(
+      String phoneNumber, String password) async {
     try {
       final result = await remoteDataSource.login(phoneNumber, password);
+      debugPrint(
+          "this repo ${User.fromJson(result).phoneNumber}${User.fromJson(result).token}");
       return Right(User.fromJson(result));
     } catch (e) {
       return Left(ServerFailure());
@@ -20,10 +24,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> register(String phoneNumber, String password) async {
+  Future<Either<Failure, Map<String, dynamic>>> register({
+    required String phoneNumber,
+    required String password,
+    required String displayName,
+    int? experienceYears,
+    String? level,
+    String? address,
+  }) async {
     try {
-      await remoteDataSource.register(phoneNumber, password);
-      return Right(null);  // هتستقبل هنا ال  displayName  -  access_token -  refresh_token
+      final response = await remoteDataSource.register(
+        phoneNumber: phoneNumber,
+        password: password,
+        displayName: displayName,
+        level: level,
+        experienceYears: experienceYears,
+        address: address,
+      );
+      debugPrint("$response");
+      return Right(
+          response);
     } catch (e) {
       return Left(ServerFailure()); // Handle error
     }

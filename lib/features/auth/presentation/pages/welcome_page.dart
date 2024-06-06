@@ -24,7 +24,8 @@ class WelcomePage extends StatelessWidget {
                 width: 235.w,
                 child: Text(
                   "Task Management & To-Do List",
-                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
+                  style:
+                      TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 )),
             16.verticalSpace,
@@ -32,36 +33,39 @@ class WelcomePage extends StatelessWidget {
                 width: 235.w,
                 child: Text(
                   "This productive tool is designed to help you better manage your taskproject-wise conveniently!",
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
+                  style:
+                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
                   textAlign: TextAlign.center,
                 )),
             30.verticalSpace,
             ElevatedButton(
-                onPressed: () {
-                  context.push('/login');
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(AppTheme.primaryColor),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  fixedSize: WidgetStateProperty.all(Size(331.w, 49.h))
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                     Text(
-                      'Let’s Start',
-                      style: TextStyle(
-                          fontSize: 19.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white),
-                    ),
-                    8.horizontalSpace,
-                    Image.asset("assets/icons/right_arrow.png",width: 24,),
-
-
-                  ],
-                ),),
-
+              onPressed: () {
+                context.push('/login');
+              },
+              style: ButtonStyle(
+                  backgroundColor:
+                      WidgetStateProperty.all(AppTheme.primaryColor),
+                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+                  fixedSize: WidgetStateProperty.all(Size(331.w, 49.h))),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Let’s Start',
+                    style: TextStyle(
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white),
+                  ),
+                  8.horizontalSpace,
+                  Image.asset(
+                    "assets/icons/right_arrow.png",
+                    width: 24,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
