@@ -1,20 +1,24 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tasky/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:tasky/storage.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/auth/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/todo/presentation/pages/add_todo_page.dart';
 import '../../features/todo/presentation/pages/qr_scanner_page.dart';
 import '../../features/todo/presentation/pages/todo_details_page.dart';
 import '../../features/todo/presentation/pages/todo_list_page.dart';
+import '../../injection_container.dart';
 
 final GoRouter router = GoRouter(
   initialLocation:
-  AppSharedPreferences.sharedPreferences.getString("accessToken") != null
-      ? "/todos"
-      : "/",
+      AppSharedPreferences.sharedPreferences.getString("accessToken") != null
+          ? "/todos"
+          : "/",
   routes: [
     GoRoute(
       path: '/',
@@ -22,15 +26,17 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => LoginPage(),
+      builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) =>  const RegisterPage(),
+      builder: (context, state) => const RegisterPage(),
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => const ProfilePage(),
+      builder: (context, state) => BlocProvider(
+          create: (BuildContext context) => sl<ProfileCubit>()..getProfileDataMethod(),
+          child: const ProfilePage()),
     ),
     GoRoute(
       path: '/todos',
@@ -49,7 +55,14 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/qrScanner',
-      builder: (context, state) =>  QRScannerPage(),
+      builder: (context, state) => QRScannerPage(),
     ),
   ],
 );
+//
+// GoRoute(
+// path: '/profile',
+// builder: (context, state) => BlocProvider(
+// create: (BuildContext context) => sl<ProfileCubit>(),
+// child: const ProfilePage()),
+// ),

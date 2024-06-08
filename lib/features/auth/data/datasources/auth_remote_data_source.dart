@@ -1,9 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:tasky/storage.dart';
 
 abstract class AuthRemoteDataSource {
@@ -31,14 +27,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       data: {"phone": phoneNumber, "password": password},
     );
 
-    if (response.statusCode == 201) {
-      debugPrint(response.data);
+    try {
+      if (response.statusCode == 201) {
+        debugPrint(response.data);
+        await AppSharedPreferences.sharedPreferences
+            .setString("accessToken", response.data["access_token"]);
+        debugPrint(
+            "acsse Token is${AppSharedPreferences.sharedPreferences.getString("accessToken")}");
+        return response.data;
+      } else {
+        debugPrint("${response.data.runtimeType}");
+        return response.data;
+      }
+    } catch (e) {
       AppSharedPreferences.sharedPreferences
           .setString("accessToken", response.data["access_token"]);
-      debugPrint(
-          "acsse Token is${AppSharedPreferences.sharedPreferences.getString("accessToken")}");
-      return response.data;
-    } else {
+      debugPrint("this Exception is ${e.toString()}  ${response.data.runtimeType}");
       return response.data;
     }
   }

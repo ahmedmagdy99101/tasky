@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,7 +12,7 @@ import 'features/todo/presentation/cubit/todo_cubit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppSharedPreferences.initStorage();
-  await di.init();
+   di.setup();
   runApp(const MyApp());
 }
 
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(
             create: (_) => di.sl<TodoCubit>(),
           ),
+
         ],
         child: ScreenUtilInit(
             designSize: const Size(375, 812),

@@ -16,7 +16,7 @@ class TodoRepositoryImpl implements TodoRepository {
       final result = await remoteDataSource.fetchTodos(page);
       return Right(result);
     } catch (e) {
-      return Left(ServerFailure());
+      return const Left(ServerFailure(""));
     }
   }
 
@@ -34,9 +34,9 @@ class TodoRepositoryImpl implements TodoRepository {
         createdAt: todo.createdAt,
         updatedAt: todo.updatedAt,
       ));
-      return Right(null);
+      return const Right(null);
     } catch (e) {
-      return Left(ServerFailure());
+      return const Left(ServerFailure(""));
     }
   }
 
@@ -54,9 +54,9 @@ class TodoRepositoryImpl implements TodoRepository {
         createdAt: todo.createdAt,
         updatedAt: todo.updatedAt,
       ));
-      return Right(null);
+      return const Right(null);
     } catch (e) {
-      return Left(ServerFailure());
+      return const Left(ServerFailure(""));
     }
   }
 
@@ -64,9 +64,9 @@ class TodoRepositoryImpl implements TodoRepository {
   Future<Either<Failure, void>> deleteTodo(String id) async {
     try {
       await remoteDataSource.deleteTodo(id);
-      return Right(null);
+      return const Right(null);
     } catch (e) {
-      return Left(ServerFailure());
+      return const Left(ServerFailure(""));
     }
   }
 }

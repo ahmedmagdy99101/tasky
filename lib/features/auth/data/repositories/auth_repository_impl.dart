@@ -13,13 +13,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> login(
       String phoneNumber, String password) async {
+    final result = await remoteDataSource.login(phoneNumber, password);
     try {
-      final result = await remoteDataSource.login(phoneNumber, password);
+
       debugPrint(
-          "this repo ${User.fromJson(result).phoneNumber}${User.fromJson(result).token}");
+          "this repo ${User.fromJson(result).phoneNumber}   ${User.fromJson(result).token}");
       return Right(User.fromJson(result));
     } catch (e) {
-      return Left(ServerFailure());
+      return Left(ServerFailure(result["message"]));
     }
   }
 
@@ -32,20 +33,20 @@ class AuthRepositoryImpl implements AuthRepository {
     String? level,
     String? address,
   }) async {
+    final response = await remoteDataSource.register(
+      phoneNumber: phoneNumber,
+      password: password,
+      displayName: displayName,
+      level: level,
+      experienceYears: experienceYears,
+      address: address,
+    );
     try {
-      final response = await remoteDataSource.register(
-        phoneNumber: phoneNumber,
-        password: password,
-        displayName: displayName,
-        level: level,
-        experienceYears: experienceYears,
-        address: address,
-      );
+
       debugPrint("$response");
-      return Right(
-          response);
+      return Right(response);
     } catch (e) {
-      return Left(ServerFailure()); // Handle error
+      return Left(ServerFailure(response["message"])); // Ha
     }
   }
 }

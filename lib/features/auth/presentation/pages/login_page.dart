@@ -6,9 +6,10 @@ import '../../../../config/theme/app_theme.dart';
 import '../../../todo/presentation/pages/todo_list_page.dart';
 import '../cubit/auth_cubit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -40,17 +41,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else if (state is AuthLoaded) {
-          Navigator.of(context).pop();
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const TodoListPage(),
-          ));
+          context.pop();
+          context.go('/todos');
+          // Navigator.of(context).pop();
+          // Navigator.of(context).push(MaterialPageRoute(
+          //   builder: (context) => const TodoListPage(),
+          // ));
         } else if (state is AuthFailure) {
-          Navigator.of(context).pop();
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: Text(state.message.toString()),
-            ),
+          context.pop();
+          Fluttertoast.showToast(
+            msg: state.message,
+            fontSize: 16,
+            backgroundColor: Colors.black,
           );
         }
       },
@@ -85,8 +87,8 @@ class _LoginPageState extends State<LoginPage> {
                           PhoneFormField(
                             controller: _phoneNumberController,
                             validator: (value) {
-                              if (value!.isValidLength() == false) {
-                                return "You Should Enter Your Phone Number";
+                              if (value!.isValid() == false) {
+                                return "Enter Your Phone number Correctly";
                               }
                               return null;
                             },
@@ -197,7 +199,6 @@ class _LoginPageState extends State<LoginPage> {
                             )),
                       ],
                     ),
-
                   ],
                 ),
               ),

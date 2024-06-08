@@ -1,9 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../domain/entities/user.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
-
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -18,7 +15,7 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await loginUseCase(
         LoginParams(phoneNumber: phoneNumber, password: password));
     result.fold(
-          (failure) => emit(AuthFailure(message: 'Login Failed')),
+          (failure) => emit(AuthFailure(message: failure.message)),
           (user) => emit(AuthLoaded(user: user)),
     );
   }
@@ -41,7 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
       address: address,
     ));
     result.fold(
-          (failure) => emit(AuthFailure(message: 'Registration Failed')),
+          (failure) => emit(AuthFailure(message: failure.message)),
           (data) => emit(AuthLoaded(user: data)),
     );
   }

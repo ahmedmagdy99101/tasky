@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:phone_form_field/phone_form_field.dart';
 import '../../../../config/theme/app_theme.dart';
@@ -47,20 +48,16 @@ class _RegisterPageState extends State<RegisterPage> {
           );
           Navigator.of(context).pop();
         } else if (state is AuthLoaded) {
-          Navigator.of(context).pop();
-          showDialog(
-            context: context,
-            builder: (context) => const AlertDialog(
-              content: Text("Restration is Successfull"),
-            ),
+          Fluttertoast.showToast(
+            msg: "تم التسجيل بنجاح",
+            fontSize: 16,
+            backgroundColor: Colors.white,
           );
         } else if (state is AuthFailure) {
-          Navigator.of(context).pop();
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: Text(state.message.toString()),
-            ),
+          Fluttertoast.showToast(
+            msg: state.message,
+            fontSize: 16,
+            backgroundColor: Colors.black,
           );
         }
       },
@@ -114,8 +111,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               PhoneFormField(
                                 controller: _phoneNumberController,
                                 validator: (value) {
-                                  if (value!.isValidLength() == false) {
-                                    return "You Shouid Enter Your Phone Number";
+                                  if (value!.isValid() == false) {
+                                    return "Enter your phone number correctly";
                                   }
                                   return null;
                                 },
@@ -179,8 +176,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                         style: TextStyle(color: Color(0xff9E9E9E)),
                                       ),
                                       value: _levelValue,
-                                      items: <String>['fresh','junior', 'midLevel', 'senior']
-                                          .map((String value) {
+                                      items: <String>[
+                                        'fresh',
+                                        'junior',
+                                        'midLevel',
+                                        'senior'
+                                      ].map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
                                           child: Text(
