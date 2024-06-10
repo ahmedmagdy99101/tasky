@@ -20,6 +20,8 @@ class TodoLoaded extends TodoState {
   List<Object> get props => [todos];
 }
 
+class TodoCreated extends TodoState {}
+
 class TodoError extends TodoState {
   final String message;
 

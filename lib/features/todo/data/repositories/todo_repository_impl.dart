@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/todo.dart';
 import '../../domain/repositories/todo_repository.dart';
@@ -21,19 +22,21 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addTodo(Todo todo) async {
+  Future<Either<Failure, void>> addTodo({
+    required String title,
+    required String desc,
+    required String priority,
+    required String dueDate,
+    required XFile imageFile,
+  }) async {
     try {
-      await remoteDataSource.addTodo(TodoModel(
-        id: todo.id,
-        imageUrl: todo.imageUrl,
-        title: todo.title,
-        description: todo.description,
-        priority: todo.priority,
-        status: todo.status,
-        user: todo.user,
-        createdAt: todo.createdAt,
-        updatedAt: todo.updatedAt,
-      ));
+      await remoteDataSource.addTodo(
+        title: title,
+        desc: desc,
+        priority: priority,
+        dueDate: dueDate,
+        imageFile: imageFile,
+      );
       return const Right(null);
     } catch (e) {
       return const Left(ServerFailure(""));

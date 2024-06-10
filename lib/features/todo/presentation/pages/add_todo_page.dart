@@ -1,9 +1,16 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubit/todo_cubit.dart';
-import '../../domain/entities/todo.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:tasky/config/theme/app_theme.dart';
+import 'dart:io';
+import 'package:tasky/features/todo/presentation/cubit/todo_cubit.dart';
+
+import '../widgets/data_picker_field.dart';
+
 
 class AddTodoPage extends StatefulWidget {
   const AddTodoPage({super.key});
@@ -12,64 +19,328 @@ class AddTodoPage extends StatefulWidget {
 }
 
 class AddTodoPageState extends State<AddTodoPage> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  File? _image;
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image;
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+  String? pirority = "low";
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _image = pickedFile;
+        debugPrint(_image!.path.toString());
       });
     }
   }
 
-  void _submit() {
-    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
-      return;
-    }
-    final todo = Todo(createdAt: DateTime.now(),
-      id: '',
-      title: _titleController.text,
-      description: _descriptionController.text,
-      imageUrl: _image?.path ?? '', priority: '', status: '', user: '', updatedAt: DateTime.now(),
-    );
-    context.read<TodoCubit>().addTodo(todo);
-    Navigator.pop(context);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Todo'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
+    return BlocConsumer<TodoCubit, TodoState>(
+      listener: (context, state) {
+        if (state is TodoLoading) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              content: SizedBox(
+                  width: 100.w,
+                  height: 100.h,
+                  child: const Center(child: CircularProgressIndicator())),
+            ),
+          );
+        } else if (state is TodoCreated) {
+          Fluttertoast.showToast(
+            msg: "the Task is Added",
+            fontSize: 16,
+            backgroundColor: Colors.black,
+          );
+        } else if (state is TodoFailure) {
+          context.pop();
+          Fluttertoast.showToast(
+            msg: state.message,
+            fontSize: 16,
+            backgroundColor: Colors.black,
+          );
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            titleSpacing: 1,
+            title: Text(
+              "Add new task",
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w700),
+            ),
+            leading: IconButton(
+              onPressed: () {
+                context.pop();
+              },
+              icon: Image.asset(
+                "assets/icons/left_arrow.png",
+                width: 24,
+              ),
+            ),
+          ),
+          // appBar: AppBar(
+          //   forceMaterialTransparency: true,
+          //   title: Text(
+          //     'Add new task',
+          //     style: TextStyle(
+          //       color: Colors.black,
+          //       fontSize: 20.w,
+          //       fontWeight: FontWeight.w700,
+          //     ),
+          //   ),
+          // ),
+          body: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () => _showImagePickerDialog(context),
+                    child: DottedBorder(
+                      color: AppTheme.primaryColor,
+                      borderType: BorderType.RRect,
+                      radius: Radius.circular(12.r),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 15.r),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: _image == null
+                            ? Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate_outlined,
+                                color: AppTheme.primaryColor,
+                                size: 24.sp,
+                              ),
+                              8.horizontalSpace,
+                              Text(
+                                'Add Img',
+                                style: TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: 19.sp,
+                                  fontWeight: FontWeight.w500
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                            : FittedBox(
+                          fit: BoxFit.cover,
+                          child: Image.file(
+                            File(_image!.path),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Text(
+                    "Task title",
+                    style: TextStyle(
+                        color: const Color(0xFF6E6A7C),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400),
+                  ),
+                 8.verticalSpace,
+                  TextField(
+                    controller: titleController,
+                    style: TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w400),
+                    decoration: InputDecoration(
+                      hintText: 'Enter title here...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    "Task Description",
+                    style: TextStyle(
+                        color: const Color(0xFF6E6A7C),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400),
+                  ),
+                  8.verticalSpace,
+                  TextField(
+                    controller: descriptionController,
+                    style: TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w400),
+                    maxLines: 6,
+                    decoration: InputDecoration(
+                      hintText: 'Enter description here...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    "Priority",
+                    style: TextStyle(
+                        color: const Color(0xFF6E6A7C),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400),
+                  ),
+                  8.verticalSpace,
+                  DropdownButtonFormField<String>(
+                    icon: Icon(
+                      Icons.arrow_drop_down_rounded,
+                      color: AppTheme.primaryColor,
+                      size: 30.w,
+                    ),
+                    style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16.sp,
+                    ),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppTheme.primaryColor.withOpacity(0.1),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.white),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.white),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    value: 'low',
+                    items: <String>['low', 'medium', 'high']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.flag_outlined,
+                              size: 20.sp,
+                              color: AppTheme.primaryColor,
+                            ),
+                            5.horizontalSpace,
+                            Text('$value Priority'),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        pirority = newValue;
+                      });
+                    },
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    "Due date",
+                    style: TextStyle(
+                        color: Color(0xFF6E6A7C),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400),
+                  ),
+                  8.verticalSpace,
+                  CustomDatePickerField(
+                    initialDate: DateTime.now(),
+                    label: "EndDate",
+                    onDateSelected: (p0) {
+                      setState(() {
+                        dateController.text =
+                        "${p0.year}-${p0.month}-${p0.day}";
+                      });
+                      debugPrint(dateController.text);
+                    },
+                  ),
+                  28.verticalSpace,
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add task logic here
+                      if (_image == null) {
+                        Fluttertoast.showToast(
+                          msg: "Pick your image",
+                          fontSize: 16,
+                          backgroundColor: Colors.black,
+                        );
+                      } else {
+                        if (titleController.text.isEmpty ||
+                            descriptionController.text.isEmpty) {
+                          Fluttertoast.showToast(
+                            msg: "Must Be Enter Your title and Discreption",
+                            fontSize: 16,
+                            backgroundColor: Colors.black,
+                          );
+                        } else {
+                          BlocProvider.of<TodoCubit>(context).addTodo(
+                              title: titleController.text,
+                              desc: descriptionController.text,
+                              imageFile: _image!,
+                              dueDate: dateController.text.isEmpty
+                                  ? "${DateTime.now().year}-${DateTime.now().year}-${DateTime.now().year}"
+                                  : dateController.text,
+                              priority: pirority ?? "low");
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50.h),
+                      // backgroundColor: Colors.purple,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text('Add task',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        )),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showImagePickerDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick Image'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Camera'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
             ),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
-            ),
-            SizedBox(height: 20),
-            _image == null
-                ? TextButton.icon(
-              icon: Icon(Icons.image),
-              label: Text('Pick Image'),
-              onPressed: _pickImage,
-            )
-                : Image.file(File(_image!.path)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submit,
-              child: Text('Add Todo'),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
             ),
           ],
         ),
@@ -77,3 +348,6 @@ class AddTodoPageState extends State<AddTodoPage> {
     );
   }
 }
+
+// For formatting date
+
