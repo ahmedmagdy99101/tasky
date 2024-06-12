@@ -39,3 +39,21 @@ class TodoFailure extends TodoState {
   @override
   List<Object> get props => [message];
 }
+
+class UploadImageSuccess extends TodoState {
+  final String imagePath;
+
+  const UploadImageSuccess({required this.imagePath});
+
+  @override
+  List<Object> get props => [imagePath];
+}
+
+class UploadImageError extends TodoState {
+  final String message;
+
+  const UploadImageError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

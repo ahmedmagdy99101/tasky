@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tasky/config/constants/app_strings.dart';
 import 'package:tasky/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:tasky/features/todo/domain/entities/todo.dart';
+import 'package:tasky/features/todo/presentation/cubit/add_todo_cubit/add_todo_cubit.dart';
 import 'package:tasky/storage.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -19,7 +21,7 @@ import '../../injection_container.dart';
 
 final GoRouter router = GoRouter(
   initialLocation:
-  AppSharedPreferences.sharedPreferences.getString("accessToken") != null
+  AppSharedPreferences.sharedPreferences.containsKey(AppStrings.accessToken)
       ? "/todos"
       : "/",
   routes: [
@@ -37,10 +39,12 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => BlocProvider(
-          create: (BuildContext context) =>
-          sl<ProfileCubit>()..getProfileDataMethod(),
-          child: const ProfilePage()),
+      builder: (context, state) =>
+          BlocProvider(
+              create: (BuildContext context) =>
+              sl<ProfileCubit>()
+                ..getProfileDataMethod(),
+              child: const ProfilePage()),
     ),
     GoRoute(
       path: '/todos',
@@ -48,13 +52,17 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/addTodo',
-      builder: (context, state) => const AddTodoPage(),
+      builder: (context, state) {
+        return BlocProvider(
+                create: (context) => sl<CreateTodoCubit>(),
+                child:  const AddTodoPage(),
+              );
+       
+      },
     ),
     GoRoute(
       path: '/todo',
-      builder: (context, state) {
-        return TodoDetailsPage(task: state.extra as Todo);
-      },
+      builder: (context, state) =>  TodoDetailsPage(task: state.extra as Todo),
     ),
     GoRoute(
       path: '/qrScanner',

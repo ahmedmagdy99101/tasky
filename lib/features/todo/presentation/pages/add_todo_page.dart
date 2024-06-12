@@ -7,8 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tasky/config/theme/app_theme.dart';
 import 'dart:io';
-import 'package:tasky/features/todo/presentation/cubit/todo_cubit.dart';
-
+import 'package:intl/intl.dart';
+import '../../domain/entities/todo.dart';
+import '../cubit/add_todo_cubit/add_todo_cubit.dart';
 import '../widgets/data_picker_field.dart';
 
 
@@ -24,7 +25,8 @@ class AddTodoPageState extends State<AddTodoPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  String? pirority = "low";
+  String? priority = "low";
+  DateTime selectedData = DateTime.now();
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -38,28 +40,53 @@ class AddTodoPageState extends State<AddTodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<TodoCubit, TodoState>(
+    return BlocConsumer<CreateTodoCubit, AddTodoState>(
       listener: (context, state) {
-        if (state is TodoLoading) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: SizedBox(
-                  width: 100.w,
-                  height: 100.h,
-                  child: const Center(child: CircularProgressIndicator())),
-            ),
-          );
-        } else if (state is TodoCreated) {
+        // if (state is CreateTodoLoading) {
+        //   showDialog(
+        //
+        //     context: context,
+        //     builder: (context) => AlertDialog(
+        //       backgroundColor: Colors.transparent,
+        //       content: SizedBox(
+        //
+        //           width: 100.w,
+        //           height: 100.h,
+        //           child: const Center(child: CircularProgressIndicator())),
+        //     ),
+        //   );
+        // }
+        if (state is CreateTodoSuccess) {
+          context.pop();
           Fluttertoast.showToast(
-            msg: "the Task is Added",
+            msg: state.message.toString(),
             fontSize: 16,
             backgroundColor: Colors.black,
           );
-        } else if (state is TodoFailure) {
-          context.pop();
+        } else if (state is CreateTodoError) {
+         // context.pop();
           Fluttertoast.showToast(
-            msg: state.message,
+            msg: state.message.toString(),
+            fontSize: 16,
+            backgroundColor: Colors.black,
+          );
+        }
+        if(state is UploadImageSuccess){
+        // context.pop();
+          BlocProvider.of<CreateTodoCubit>(context).addTodo(
+            todo: Todo(
+              title: titleController.text,
+              description: descriptionController.text.trim(),
+              imageUrl: state.imagePath,
+              createdAt: selectedData,
+              priority: priority ?? "low", id: '', status: '', user: '', updatedAt: DateTime.now(),
+            )
+            );
+        }
+        else if (state is UploadImageError) {
+         // context.pop();
+          Fluttertoast.showToast(
+            msg: 'حدث خطأ أثناء محاولة رفع الصورة',
             fontSize: 16,
             backgroundColor: Colors.black,
           );
@@ -78,7 +105,7 @@ class AddTodoPageState extends State<AddTodoPage> {
             ),
             leading: IconButton(
               onPressed: () {
-                context.pop();
+              context.pop(true);
               },
               icon: Image.asset(
                 "assets/icons/left_arrow.png",
@@ -97,7 +124,7 @@ class AddTodoPageState extends State<AddTodoPage> {
           //     ),
           //   ),
           // ),
-          body: Padding(
+          body:state is CreateTodoLoading ? Center(child: Image.asset("assets/images/loading.gif",width: 100,height: 100,),): Padding(
             padding: EdgeInsets.all(16.w),
             child: SingleChildScrollView(
               child: Column(
@@ -139,7 +166,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                         )
                             : FittedBox(
                           fit: BoxFit.cover,
-                          child: Image.file(
+                          child: Image.file(width: 200,height: 200,
                             File(_image!.path),
                             fit: BoxFit.cover,
                           ),
@@ -241,7 +268,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                     }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
-                        pirority = newValue;
+                        priority = newValue;
                       });
                     },
                   ),
@@ -249,7 +276,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                   Text(
                     "Due date",
                     style: TextStyle(
-                        color: Color(0xFF6E6A7C),
+                        color: const Color(0xFF6E6A7C),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w400),
                   ),
@@ -259,6 +286,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                     label: "EndDate",
                     onDateSelected: (p0) {
                       setState(() {
+                        selectedData = p0;
                         dateController.text =
                         "${p0.year}-${p0.month}-${p0.day}";
                       });
@@ -284,14 +312,9 @@ class AddTodoPageState extends State<AddTodoPage> {
                             backgroundColor: Colors.black,
                           );
                         } else {
-                          BlocProvider.of<TodoCubit>(context).addTodo(
-                              title: titleController.text,
-                              desc: descriptionController.text,
-                              imageFile: _image!,
-                              dueDate: dateController.text.isEmpty
-                                  ? "${DateTime.now().year}-${DateTime.now().year}-${DateTime.now().year}"
-                                  : dateController.text,
-                              priority: pirority ?? "low");
+                          BlocProvider.of<CreateTodoCubit>(context).uploadImage(imageFile: _image!);
+
+
                         }
                       }
                     },

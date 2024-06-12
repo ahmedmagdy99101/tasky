@@ -7,6 +7,7 @@ import 'package:tasky/config/theme/app_theme.dart';
 import 'package:tasky/features/todo/presentation/cubit/todo_cubit.dart';
 import 'package:tasky/storage.dart';
 import '../../data/models/todo_model.dart';
+import '../../domain/entities/todo.dart';
 import '../widgets/build_task_card_widget.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,22 +19,39 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  final PagingController<int, TodoModel> _pagingController =
-  PagingController(firstPageKey: 0);
-  // int page = 1;
+  final PagingController<int, Todo> _pagingController = PagingController(firstPageKey: 1);
+
   @override
   void initState() {
-    BlocProvider.of<TodoCubit>(context).loadTodos(1);
-    // TodoCubit.pagingController.addPageRequestListener((pageKey) {
-    //   BlocProvider.of<TodoCubit>(context).loadTodos(pageKey);
-    // });
     super.initState();
+    _pagingController.addPageRequestListener((pageKey) {
+      BlocProvider.of<TodoCubit>(context).loadTodos(pageKey);
+    });
+    BlocProvider.of<TodoCubit>(context).loadTodos(1);
+  }
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TodoCubit, TodoState>(
       builder: (context, state) {
+        if (state is TodoLoaded) {
+          final isLastPage = state.todos.length < 20;
+          if (isLastPage) {
+            _pagingController.appendLastPage(state.todos);
+          } else {
+            final nextPageKey = (_pagingController.nextPageKey ?? 1 ) + 1;
+            _pagingController.appendPage(state.todos, nextPageKey);
+          }
+        } else if (state is TodoError) {
+          _pagingController.error = state.message;
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: Text(
@@ -52,8 +70,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   )),
               IconButton(
                   onPressed: () {
-                    AppSharedPreferences.sharedPreferences
-                        .remove("accessToken");
+                    AppSharedPreferences.sharedPreferences.remove("accessToken");
                     context.replace("/login");
                   },
                   icon: const Icon(
@@ -63,12 +80,8 @@ class _TodoListPageState extends State<TodoListPage> {
                   )),
             ],
           ),
-          body: state is TodoLoading
-              ? const Center(child: CircularProgressIndicator())
-              : state is TodoLoaded
-              ? Padding(
-            padding: const EdgeInsets.only(
-                top: 20, bottom: 20, left: 10, right: 5),
+          body: Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 20, left: 10, right: 5),
             child: Column(
               children: [
                 Align(
@@ -80,8 +93,7 @@ class _TodoListPageState extends State<TodoListPage> {
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16.sp,
-                            color: const Color(0xFF24252C)
-                                .withOpacity(0.6)),
+                            color: const Color(0xFF24252C).withOpacity(0.6)),
                       ),
                     )),
                 15.verticalSpace,
@@ -95,18 +107,14 @@ class _TodoListPageState extends State<TodoListPage> {
                             horizontal: 12,
                             vertical: 8,
                           ),
-                          buttonMargin: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          buttonMargin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                               color: AppTheme.primaryColor,
-                              borderRadius:
-                              BorderRadius.circular(24)),
+                              borderRadius: BorderRadius.circular(24)),
                           unselectedDecoration: BoxDecoration(
                               color: const Color(0xFFF0ECFF),
-                              borderRadius:
-                              BorderRadius.circular(24)),
+                              borderRadius: BorderRadius.circular(24)),
                           radius: 24,
-                          // unselectedBackgroundColor: Color(0xFFF0ECFF),
                           unselectedLabelStyle: TextStyle(
                             color: Colors.grey,
                             fontSize: 16.sp,
@@ -135,71 +143,50 @@ class _TodoListPageState extends State<TodoListPage> {
                         Expanded(
                           child: TabBarView(
                             children: [
+                              PagedListView<int, Todo>(
+                                pagingController: _pagingController,
+                                builderDelegate: PagedChildBuilderDelegate<Todo>(
+                                  itemBuilder: (context, item, index) => GestureDetector(
+                                    onTap: () {
+                                      context.push("/todo", extra: item);
+                                    },
+                                    child: BuildTaskCardWidget(todoData: item),
+                                  ),
+                                ),
+                              ),
                               ListView.builder(
-                                  itemCount: state.todos.length,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                        onTap: () {
-                                          context.push("/todo",
-                                              extra:
-                                              state.todos[index]);
-                                        },
-                                        child: BuildTaskCardWidget(
-                                          todoData:
-                                          state.todos[index],
-                                        ));
-                                  }),
+                                itemCount: TodoCubit.inProgressList.length,
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      context.push("/todo", extra: TodoCubit.inProgressList[index]);
+                                    },
+                                    child: BuildTaskCardWidget(todoData: TodoCubit.inProgressList[index]),
+                                  );
+                                },
+                              ),
                               ListView.builder(
-                                  itemCount:
-                                  TodoCubit.inProgressList.length,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        context.push("/todo",
-                                            extra:
-                                            TodoCubit
-                                                .inProgressList[index]);
-                                      },
-                                      child: BuildTaskCardWidget(
-                                        todoData: TodoCubit
-                                            .inProgressList[index],
-                                      ),
-                                    );
-                                  }),
+                                itemCount: TodoCubit.waitingList.length,
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      context.push("/todo", extra: TodoCubit.waitingList[index]);
+                                    },
+                                    child: BuildTaskCardWidget(todoData: TodoCubit.waitingList[index]),
+                                  );
+                                },
+                              ),
                               ListView.builder(
-                                  itemCount:
-                                  TodoCubit.waitingList.length,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        context.push("/todo",
-                                            extra:
-                                            TodoCubit
-                                                .waitingList[index]);
-                                      },
-                                      child: BuildTaskCardWidget(
-                                        todoData: TodoCubit
-                                            .waitingList[index],
-                                      ),
-                                    );
-                                  }),
-                              ListView.builder(
-                                  itemCount:
-                                  TodoCubit.finishedList.length,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        context.push("/todo",
-                                            extra:
-                                            TodoCubit
-                                                .finishedList[index]);
-                                      },
-                                      child: BuildTaskCardWidget(
-                                        todoData: TodoCubit
-                                            .finishedList[index],
-                                      ),
-                                    );
-                                  })
+                                itemCount: TodoCubit.finishedList.length,
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      context.push("/todo", extra: TodoCubit.finishedList[index]);
+                                    },
+                                    child: BuildTaskCardWidget(todoData: TodoCubit.finishedList[index]),
+                                  );
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -208,30 +195,6 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 )
               ],
-            ),
-          )
-              : Center(
-            child: ElevatedButton(
-              onPressed: () {
-                context.replace('/login');
-                AppSharedPreferences.sharedPreferences
-                    .remove("accessToken");
-              },
-              style: ButtonStyle(
-                  backgroundColor:
-                  WidgetStateProperty.all(AppTheme.primaryColor),
-                  shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12))),
-                  fixedSize:
-                  WidgetStateProperty.all(Size(331.w, 49.h))),
-              child: Text(
-                'Sign In',
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white),
-              ),
             ),
           ),
           floatingActionButton: Column(
@@ -245,7 +208,6 @@ class _TodoListPageState extends State<TodoListPage> {
                   elevation: 0,
                   backgroundColor: AppTheme.secondaryColor,
                   onPressed: () {
-                    //  context.push('/profile');
                     setState(() {});
                   },
                   child: Image.asset(
@@ -264,7 +226,9 @@ class _TodoListPageState extends State<TodoListPage> {
                   heroTag: 'addTodoFab',
                   backgroundColor: AppTheme.primaryColor,
                   onPressed: () {
-                    context.push('/addTodo');
+                    context.push('/addTodo').then((value) {
+                      BlocProvider.of<TodoCubit>(context).loadTodos(1);
+                    });
                   },
                   child: const Icon(Icons.add),
                 ),

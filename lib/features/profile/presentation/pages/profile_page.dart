@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tasky/config/constants/app_strings.dart';
 import 'package:tasky/config/theme/app_theme.dart';
 import 'package:tasky/storage.dart';
 import '../../../../injection_container.dart';
@@ -86,14 +87,14 @@ class ProfilePage extends StatelessWidget {
               ),
             );
           } else if (state is ProfileIsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: Image.asset("assets/images/loading.gif",width: 100,height: 100,),);
           } else if (state is ProfileFailure) {
             return Center(
               child: ElevatedButton(
                 onPressed: () {
                   context.replace('/login');
                   AppSharedPreferences.sharedPreferences
-                      .remove("accessToken");
+                      .remove(AppStrings.accessToken);
                 },
                 style: ButtonStyle(
                     backgroundColor:

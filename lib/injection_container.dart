@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:tasky/features/todo/presentation/cubit/add_todo_cubit/add_todo_cubit.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/usecases/login_usecase.dart';
@@ -22,11 +23,11 @@ void setup() {
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSourceImpl>(
-          () => AuthRemoteDataSourceImpl(dio: sl.get<Dio>()));
+          () => AuthRemoteDataSourceImpl());
   sl.registerLazySingleton<TodoRemoteDataSourceImpl>(
-          () => TodoRemoteDataSourceImpl(dio: sl.get<Dio>()));
+          () => TodoRemoteDataSourceImpl());
   sl.registerLazySingleton<ProfileRemoteDateSourceImpl>(
-          () => ProfileRemoteDateSourceImpl(dio: sl.get<Dio>()));
+          () => ProfileRemoteDateSourceImpl());
 
   // Repositories
   sl.registerLazySingleton<AuthRepositoryImpl>(() =>
@@ -55,4 +56,5 @@ void setup() {
     repository: sl.get<TodoRepositoryImpl>(),
   ));
   sl.registerFactory(() => ProfileCubit(sl.get<ProfileDataUseCase>()));
+  sl.registerFactory(() => CreateTodoCubit( repository: sl.get<TodoRepositoryImpl>(),));
 }

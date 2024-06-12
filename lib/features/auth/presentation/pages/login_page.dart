@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import '../../../../config/constants/app_strings.dart';
 import '../../../../config/theme/app_theme.dart';
 import '../../../todo/presentation/pages/todo_list_page.dart';
 import '../cubit/auth_cubit.dart';
@@ -30,25 +31,27 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is AuthLoading) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: SizedBox(
-                  width: 100.w,
-                  height: 100.h,
-                  child: const Center(child: CircularProgressIndicator())),
-            ),
-          );
-        } else if (state is AuthLoaded) {
-          context.pop();
+        // if (state is AuthLoading) {
+        //   showDialog(
+        //     context: context,
+        //     builder: (context) => AlertDialog(
+        //       content: SizedBox(
+        //           width: 100.w,
+        //           height: 100.h,
+        //           child: const Center(child: CircularProgressIndicator())),
+        //     ),
+        //   );
+        // }
+
+         if (state is AuthLoaded) {
+         // context.pop();
           context.go('/todos');
           // Navigator.of(context).pop();
           // Navigator.of(context).push(MaterialPageRoute(
           //   builder: (context) => const TodoListPage(),
           // ));
         } else if (state is AuthFailure) {
-          context.pop();
+       //   context.pop();
           Fluttertoast.showToast(
             msg: state.message,
             fontSize: 16,
@@ -58,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       },
       builder: (context, state) {
         return Scaffold(
-          body: Form(
+          body: state is AuthLoading ? Center(child: Image.asset("assets/images/loading.gif",width: 100,height: 100,),): Form(
             key: _formKey,
             child: SafeArea(
               child: SingleChildScrollView(
@@ -78,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Login",
+                              AppStrings.login,
                               style: TextStyle(
                                   fontSize: 24.sp, fontWeight: FontWeight.w700),
                             ),
@@ -88,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _phoneNumberController,
                             validator: (value) {
                               if (value!.isValid() == false) {
-                                return "Enter Your Phone number Correctly";
+                                return AppStrings.checkPhoneValid;
                               }
                               return null;
                             },
@@ -118,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _passwordController,
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return "You Should Enter password";
+                                return AppStrings.checkPasswordValid;
                               }
 
                               return null;

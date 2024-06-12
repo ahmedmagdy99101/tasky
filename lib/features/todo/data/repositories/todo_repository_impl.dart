@@ -22,22 +22,13 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addTodo({
-    required String title,
-    required String desc,
-    required String priority,
-    required String dueDate,
-    required XFile imageFile,
+  Future<Either<Failure, Todo>> addTodo({
+    required Todo todo,
   }) async {
     try {
-      await remoteDataSource.addTodo(
-        title: title,
-        desc: desc,
-        priority: priority,
-        dueDate: dueDate,
-        imageFile: imageFile,
+      await remoteDataSource.addTodo(todo: todo
       );
-      return const Right(null);
+      return  Right(todo);
     } catch (e) {
       return const Left(ServerFailure(""));
     }
@@ -68,6 +59,16 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       await remoteDataSource.deleteTodo(id);
       return const Right(null);
+    } catch (e) {
+      return const Left(ServerFailure(""));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadImage({required XFile imageFile}) async {
+    try {
+      final result = await remoteDataSource.uploadImage(imageFile: imageFile);
+      return Right(result);
     } catch (e) {
       return const Left(ServerFailure(""));
     }

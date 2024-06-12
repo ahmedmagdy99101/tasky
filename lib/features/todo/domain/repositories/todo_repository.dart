@@ -5,11 +5,10 @@ import '../entities/todo.dart';
 
 abstract class TodoRepository {
   Future<Either<Failure, List<Todo>>> fetchTodos(int page);
-  Future<Either<Failure, void>> addTodo({
-    required String title,
-    required String desc,
-    required String priority,
-    required String dueDate,
+  Future<Either<Failure, Todo>> addTodo({
+    required Todo todo,
+  });
+  Future<Either<Failure, String>> uploadImage({
     required XFile imageFile,
   });
   Future<Either<Failure, void>> updateTodo(Todo todo);

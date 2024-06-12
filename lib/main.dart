@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tasky/core/utils/services/remote/dio_helper.dart';
 import 'package:tasky/storage.dart';
+import 'bloc_observer.dart';
 import 'config/constants/app_router.dart';
 import 'config/theme/app_theme.dart';
 import 'injection_container.dart' as di;
@@ -11,8 +13,10 @@ import 'features/todo/presentation/cubit/todo_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppSharedPreferences.initStorage();
+  await AppSharedPreferences.initialSharedPreference();
+   DioHelper.init();
    di.setup();
+  Bloc.observer = MyBlocObserver();
   runApp(const MyApp());
 }
 

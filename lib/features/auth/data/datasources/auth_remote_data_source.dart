@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:tasky/config/APIs/apis_urls.dart';
+import 'package:tasky/config/constants/app_strings.dart';
 import 'package:tasky/storage.dart';
+
+import '../../../../core/utils/services/remote/dio_helper.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String phoneNumber, String password);
@@ -15,35 +19,34 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final Dio dio;
 
-  AuthRemoteDataSourceImpl({required this.dio});
+
+  AuthRemoteDataSourceImpl();
 
   @override
-  Future<Map<String, dynamic>> login(
-      String phoneNumber, String password) async {
-    final response = await dio.post(
-      'https://todo.iraqsapp.com/auth/login',
-      data: {"phone": phoneNumber, "password": password},
-    );
+  Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
+
 
     try {
-      if (response.statusCode == 201) {
-        debugPrint(response.data);
-        await AppSharedPreferences.sharedPreferences
-            .setString("accessToken", response.data["access_token"]);
-        debugPrint(
-            "acsse Token is${AppSharedPreferences.sharedPreferences.getString("accessToken")}");
+      final response = await DioHelper.dio.post(
+        ApisStrings.loginUrl,
+        data: {"phone": phoneNumber, "password": password},
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+     //   print({response.data});
+        await AppSharedPreferences.setString( key: AppStrings.accessToken, value: response.data["access_token"] ,);
+        await AppSharedPreferences.setString( key: AppStrings.refreshToken, value: response.data["refresh_token"] ,);
+        debugPrint("access Token is${AppSharedPreferences.getString(key: AppStrings.accessToken)}");
+        debugPrint("refresh Token is${AppSharedPreferences.getString(key: AppStrings.refreshToken)}");
         return response.data;
       } else {
         debugPrint("${response.data.runtimeType}");
         return response.data;
       }
     } catch (e) {
-      AppSharedPreferences.sharedPreferences
-          .setString("accessToken", response.data["access_token"]);
-      debugPrint("this Exception is ${e.toString()}  ${response.data.runtimeType}");
-      return response.data;
+      //AppSharedPreferences.sharedPreferences.setString("accessToken", response.data["access_token"]);
+      debugPrint("this Exception is ${e.toString()} ");
+      return {};
     }
   }
 
@@ -56,8 +59,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? level,
     String? address,
   }) async {
-    final response = await dio.post(
-      'https://todo.iraqsapp.com/auth/register',
+    final response = await DioHelper.dio.post(
+      ApisStrings.registerUrl,
       data: {
         "phone": phoneNumber,
         "password": password,
@@ -68,7 +71,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       },
     );
     debugPrint("${response.statusCode}");
-    if (response.statusCode == 201) {
+    if (response.statusCode == 201 || response.statusCode == 200) {
       debugPrint("${response.data}");
       return response.data;
     } else {

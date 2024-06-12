@@ -157,7 +157,7 @@ class _TodoDetailsPageState extends State<TodoDetailsPage> {
               SizedBox(height: 16.h),
               Center(
                 child: QrImageView(
-                  data: "https://example.com", // Replace with your data
+                  data: "${widget.task.id}", // Replace with your data
                   version: QrVersions.auto,
                   size: 400.w,
                 ),
