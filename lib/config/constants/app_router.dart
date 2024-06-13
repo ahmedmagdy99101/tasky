@@ -13,7 +13,10 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
+import '../../features/todo/presentation/cubit/single_todo/single_todo_cubit.dart';
+import '../../features/todo/presentation/cubit/update_todo_cubit/update_todo_cubit.dart';
 import '../../features/todo/presentation/pages/add_todo_page.dart';
+import '../../features/todo/presentation/pages/edit_todo_page.dart';
 import '../../features/todo/presentation/pages/qr_scanner_page.dart';
 import '../../features/todo/presentation/pages/todo_details_page.dart';
 import '../../features/todo/presentation/pages/todo_list_page.dart';
@@ -21,9 +24,9 @@ import '../../injection_container.dart';
 
 final GoRouter router = GoRouter(
   initialLocation:
-  AppSharedPreferences.sharedPreferences.containsKey(AppStrings.accessToken)
-      ? "/todos"
-      : "/",
+      AppSharedPreferences.sharedPreferences.containsKey(AppStrings.accessToken)
+          ? "/todos"
+          : "/",
   routes: [
     GoRoute(
       path: '/',
@@ -39,12 +42,10 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) =>
-          BlocProvider(
-              create: (BuildContext context) =>
-              sl<ProfileCubit>()
-                ..getProfileDataMethod(),
-              child: const ProfilePage()),
+      builder: (context, state) => BlocProvider(
+          create: (BuildContext context) =>
+              sl<ProfileCubit>()..getProfileDataMethod(),
+          child: const ProfilePage()),
     ),
     GoRoute(
       path: '/todos',
@@ -54,24 +55,39 @@ final GoRouter router = GoRouter(
       path: '/addTodo',
       builder: (context, state) {
         return BlocProvider(
-                create: (context) => sl<CreateTodoCubit>(),
-                child:  const AddTodoPage(),
-              );
-       
+          create: (context) => sl<CreateTodoCubit>(),
+          child: const AddTodoPage(),
+        );
       },
     ),
     GoRoute(
+      path: '/edit',
+      builder: (context, state) => BlocProvider(
+        create: (BuildContext context) => sl<UpdateTodoCubit>(),
+        child: EditTaskPage(
+          task: state.extra as Todo,
+        ),
+      ),
+    ),
+    GoRoute(
       path: '/todo',
-      builder: (context, state) =>  TodoDetailsPage(task: state.extra as Todo),
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<SingleTodoCubit>(),
+        child: TodoDetailsPage(task: state.extra as Todo),
+      ),
     ),
     GoRoute(
       path: '/qrScanner',
-      builder: (context, state) => QRScannerPage(),
+      builder: (context, state) {
+        return BlocProvider(
+          create: (context) => sl<SingleTodoCubit>(),
+          child: QRScannerPage(),
+        );
+      },
     ),
   ],
 );
 //
-
 
 // final GoRouter router = GoRouter(
 //   initialLocation:

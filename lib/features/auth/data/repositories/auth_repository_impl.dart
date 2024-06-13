@@ -15,9 +15,7 @@ class AuthRepositoryImpl implements AuthRepository {
       String phoneNumber, String password) async {
     final result = await remoteDataSource.login(phoneNumber, password);
     try {
-
-      debugPrint(
-          "this repo ${User.fromJson(result).phoneNumber}   ${User.fromJson(result).token}");
+      debugPrint("this repo ${User.fromJson(result).phoneNumber}   ${User.fromJson(result).token}");
       return Right(User.fromJson(result));
     } catch (e) {
       return Left(ServerFailure(result["message"]));
@@ -42,7 +40,7 @@ class AuthRepositoryImpl implements AuthRepository {
       address: address,
     );
     try {
-
+      debugPrint("this repo ${User.fromJson(response).token} ");
       debugPrint("$response");
       return Right(response);
     } catch (e) {

@@ -2,11 +2,11 @@ import 'package:buttons_tabbar/buttons_tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tasky/config/theme/app_theme.dart';
 import 'package:tasky/features/todo/presentation/cubit/todo_cubit.dart';
 import 'package:tasky/storage.dart';
-import '../../data/models/todo_model.dart';
 import '../../domain/entities/todo.dart';
 import '../widgets/build_task_card_widget.dart';
 import 'package:go_router/go_router.dart';
@@ -19,12 +19,12 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  final PagingController<int, Todo> _pagingController = PagingController(firstPageKey: 1);
+//  final PagingController<int, Todo> _pagingController = PagingController(firstPageKey: 1);
 
   @override
   void initState() {
     super.initState();
-    _pagingController.addPageRequestListener((pageKey) {
+    BlocProvider.of<TodoCubit>(context).pagingController.addPageRequestListener((pageKey) {
       BlocProvider.of<TodoCubit>(context).loadTodos(pageKey);
     });
     BlocProvider.of<TodoCubit>(context).loadTodos(1);
@@ -32,25 +32,26 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   void dispose() {
-    _pagingController.dispose();
+ //   _pagingController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TodoCubit, TodoState>(
+    return BlocConsumer<TodoCubit, TodoState>(
       builder: (context, state) {
-        if (state is TodoLoaded) {
-          final isLastPage = state.todos.length < 20;
-          if (isLastPage) {
-            _pagingController.appendLastPage(state.todos);
-          } else {
-            final nextPageKey = (_pagingController.nextPageKey ?? 1 ) + 1;
-            _pagingController.appendPage(state.todos, nextPageKey);
-          }
-        } else if (state is TodoError) {
-          _pagingController.error = state.message;
-        }
+        // if (state is TodoLoaded) {
+        //   final isLastPage = state.todos.length < 20;
+        //   if (isLastPage) {
+        //     _pagingController.appendLastPage(BlocProvider.of<TodoCubit>(context).allTodos);
+        //   } else {
+        //     final nextPageKey = (_pagingController.nextPageKey ?? 1 ) + 1;
+        //     _pagingController.appendPage(BlocProvider.of<TodoCubit>(context).allTodos, nextPageKey);
+        //   }
+        // } else if (state is TodoError) {
+        //   _pagingController.error = state.message;
+        // }
+
 
         return Scaffold(
           appBar: AppBar(
@@ -70,7 +71,8 @@ class _TodoListPageState extends State<TodoListPage> {
                   )),
               IconButton(
                   onPressed: () {
-                    AppSharedPreferences.sharedPreferences.remove("accessToken");
+                    AppSharedPreferences.sharedPreferences.clear();
+                    BlocProvider.of<TodoCubit>(context).logout();
                     context.replace("/login");
                   },
                   icon: const Icon(
@@ -80,7 +82,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   )),
             ],
           ),
-          body: Padding(
+          body:    Padding(
             padding: const EdgeInsets.only(top: 20, bottom: 20, left: 10, right: 5),
             child: Column(
               children: [
@@ -140,50 +142,124 @@ class _TodoListPageState extends State<TodoListPage> {
                             ),
                           ],
                         ),
-                        Expanded(
+                        state is TodoLoading
+                            ? Expanded(
+                              child: Center(
+                                child: Image.asset(
+                              "assets/images/loading.gif",
+                              width: 100,
+                              height: 100,
+                                                        ),
+                                                      ),
+                            )
+                            :   Expanded(
                           child: TabBarView(
                             children: [
-                              PagedListView<int, Todo>(
-                                pagingController: _pagingController,
-                                builderDelegate: PagedChildBuilderDelegate<Todo>(
-                                  itemBuilder: (context, item, index) => GestureDetector(
-                                    onTap: () {
-                                      context.push("/todo", extra: item);
+                              RefreshIndicator(
+                                onRefresh: () {
+
+                                 return Future.delayed(const Duration(milliseconds: 500),() {
+                                   BlocProvider.of<TodoCubit>(context).loadTodos(1);
+                                   Fluttertoast.showToast(
+                                     msg:'تم تحديث البيانات',
+                                     fontSize: 16,
+                                     backgroundColor: Colors.black,
+                                   );
+                                  },);
+                                },
+                                child: PagedListView<int, Todo>(
+                                  pagingController: BlocProvider.of<TodoCubit>(context).pagingController,
+                                  builderDelegate: PagedChildBuilderDelegate<Todo>(
+                                    noItemsFoundIndicatorBuilder: (con){
+                                      return Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+
+                                        children: [
+                                          20.verticalSpace,
+                                            const Text("There is no tasks"),
+
+                                          Image.asset('assets/images/empty.png',width: 300,),
+                                          80.verticalSpace,
+                                        ],
+                                      );
                                     },
-                                    child: BuildTaskCardWidget(todoData: item),
+                                    itemBuilder: (context, item, index) => GestureDetector(
+                                      onTap: () {
+                                        context.push("/todo", extra: item);
+                                      },
+                                      child: BuildTaskCardWidget(todoData: item),
+                                    ),
                                   ),
                                 ),
                               ),
-                              ListView.builder(
-                                itemCount: TodoCubit.inProgressList.length,
+                              BlocProvider.of<TodoCubit>(context).inProgressList.isEmpty ?  Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  20.verticalSpace,
+                                  const Text("There is no tasks inProgress"),
+
+                                  Image.asset('assets/images/empty.png',width: 300,),
+                                  80.verticalSpace,
+                                ],
+                              ) : ListView.builder(
+                                itemCount: BlocProvider.of<TodoCubit>(context).inProgressList.length,
                                 itemBuilder: (context, index) {
                                   return GestureDetector(
                                     onTap: () {
-                                      context.push("/todo", extra: TodoCubit.inProgressList[index]);
+                                      context.push("/todo", extra: BlocProvider.of<TodoCubit>(
+                                          context).inProgressList[index]);
                                     },
-                                    child: BuildTaskCardWidget(todoData: TodoCubit.inProgressList[index]),
+                                    child: BuildTaskCardWidget(todoData: BlocProvider.of<TodoCubit>(
+                                        context).inProgressList[index]),
                                   );
                                 },
                               ),
-                              ListView.builder(
-                                itemCount: TodoCubit.waitingList.length,
+                              BlocProvider.of<TodoCubit>(context).waitingList.isEmpty ?  Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  20.verticalSpace,
+                                  const Text("There is no tasks waiting"),
+
+                                  Image.asset('assets/images/empty.png',width: 300,),
+                                  80.verticalSpace,
+                                ],
+                              ): ListView.builder(
+                                itemCount: BlocProvider.of<TodoCubit>(
+                                    context).waitingList.length,
                                 itemBuilder: (context, index) {
                                   return GestureDetector(
                                     onTap: () {
-                                      context.push("/todo", extra: TodoCubit.waitingList[index]);
+                                      context.push("/todo", extra: BlocProvider.of<TodoCubit>(
+                                          context).waitingList[index]);
                                     },
-                                    child: BuildTaskCardWidget(todoData: TodoCubit.waitingList[index]),
+                                    child: BuildTaskCardWidget(todoData: BlocProvider.of<TodoCubit>(
+                                        context).waitingList[index]),
                                   );
                                 },
                               ),
-                              ListView.builder(
-                                itemCount: TodoCubit.finishedList.length,
+                              BlocProvider.of<TodoCubit>(context).finishedList.isEmpty ?  Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  20.verticalSpace,
+                                  const Text("There is no tasks finished"),
+
+                                  Image.asset('assets/images/empty.png',width: 300,),
+                                  80.verticalSpace,
+                                ],
+                              ): ListView.builder(
+                                itemCount: BlocProvider.of<TodoCubit>(
+                                    context).finishedList.length,
                                 itemBuilder: (context, index) {
                                   return GestureDetector(
                                     onTap: () {
-                                      context.push("/todo", extra: TodoCubit.finishedList[index]);
+                                      context.push("/todo", extra: BlocProvider.of<TodoCubit>(
+                                          context).finishedList[index]);
                                     },
-                                    child: BuildTaskCardWidget(todoData: TodoCubit.finishedList[index]),
+                                    child: BuildTaskCardWidget(todoData: BlocProvider.of<TodoCubit>(
+                                        context).finishedList[index]),
                                   );
                                 },
                               ),
@@ -208,7 +284,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   elevation: 0,
                   backgroundColor: AppTheme.secondaryColor,
                   onPressed: () {
-                    setState(() {});
+                    context.push('/qrScanner');
                   },
                   child: Image.asset(
                     'assets/icons/barcode.png',
@@ -236,7 +312,35 @@ class _TodoListPageState extends State<TodoListPage> {
             ],
           ),
         );
-      },
+      }, listener: (BuildContext context, TodoState state) {
+      if (state is DeleteTodoIsLoading) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: SizedBox(
+                width: 100.w,
+                height: 100.h,
+                child: const Center(child: CircularProgressIndicator())),
+          ),
+        );
+
+      } else if (state is DeleteTodoSuccess) {
+        context.pop();
+        Fluttertoast.showToast(
+          msg: "تم حذف التاسك بنجاح",
+          fontSize: 16,
+          backgroundColor: Colors.black,
+        );
+        BlocProvider.of<TodoCubit>(context).loadTodos(1);
+      } else if (state is DeleteTodoFailure) {
+        Fluttertoast.showToast(
+          msg:'حدث خطا أثناء حذف التاسك',
+          fontSize: 16,
+          backgroundColor: Colors.black,
+        );
+
+      }
+    },
     );
   }
 }

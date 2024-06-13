@@ -1,9 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:tasky/config/APIs/apis_urls.dart';
 import 'package:tasky/config/theme/app_theme.dart';
 import '../../domain/entities/todo.dart';
+import '../cubit/todo_cubit.dart';
 import '../widgets/data_picker_field.dart';
 
 class TodoDetailsPage extends StatefulWidget {
@@ -19,6 +24,7 @@ class _TodoDetailsPageState extends State<TodoDetailsPage> {
   late TextEditingController priorityController;
   late TextEditingController statusController;
   late TextEditingController dateController = TextEditingController();
+  final CustomPopupMenuController controller = CustomPopupMenuController();
   @override
   void initState() {
     priorityController = TextEditingController(text: "${widget.task.priority} Priority");
@@ -48,19 +54,95 @@ class _TodoDetailsPageState extends State<TodoDetailsPage> {
           ),
         ),
         actions: [
-          PopupMenuButton<String>(
-            color: Colors.white,
-            onSelected: (value) {
-              // Handle actions like Edit and Delete
-            },
-            itemBuilder: (BuildContext context) {
-              return {'Edit', 'Delete'}.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
+          CustomPopupMenu(
+            arrowColor: Colors.white,
+            pressType: PressType.singleClick,
+            menuBuilder: () => ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 10.h),
+                alignment: Alignment.center,
+                width: 90.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: IntrinsicWidth(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          controller.hideMenu();
+                          context.push("/edit", extra: widget.task);
+                        },
+                        child: Text(
+                          "Edit",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const Divider(),
+                      GestureDetector(
+                        onTap: () {
+                          controller.hideMenu();
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Delete Task'),
+                                content: const Text(
+                                    'Are you sure you want to delete this task?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pop(); // Dismiss the dialog
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Delete'),
+                                    onPressed: () {
+                                      BlocProvider.of<TodoCubit>(
+                                          context)
+                                          .deleteTodoMethod(
+                                          widget.task.id);
+
+                                      Navigator.of(context)
+                                          .pop(); // Dismiss the dialog
+
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Text(
+                          "Delete",
+                          style: TextStyle(
+                            color: const Color(0xFFFF7D53),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            verticalMargin: -10,
+            controller: controller,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: const Icon(Icons.more_vert_rounded,
+                  color: Colors.black),
+            ),
           ),
         ],
       ),
@@ -75,18 +157,34 @@ class _TodoDetailsPageState extends State<TodoDetailsPage> {
                 width: double.infinity,
                 height: 225.h,
                 decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      fit: BoxFit.contain,
-                      image: AssetImage(
-                          'assets/images/task_image.png')),
+                  shape: BoxShape.circle,
                 ),
-                // child: Image.network(
-                //     'https://th.bing.com/th/id/OIP.wKI5dF0Peu_tv1mfB2xs3AHaFj?rs=1&pid=ImgDetMain',
-                //     height: 100,width: double.infinity,),
-        //       NetworkImage(
-        //           'https://image.shutterstock.com/image-vector/green-shop-cart-leaf-logo-260nw-710191522.jpg')),
-        // ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.r),
+                  child: CachedNetworkImage(
+                    fit: BoxFit.fill,
+                    imageUrl:
+                    '${ApisStrings.imageBaseUrl}${widget.task.imageUrl}',
+                    placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                     Image.asset(
+                      'assets/images/task_image.png',
+                    ),
+                  ),
+                ),
               ),
+              // Container(
+              //   width: double.infinity,
+              //   height: 225.h,
+              //   decoration: const BoxDecoration(
+              //     image: DecorationImage(
+              //         fit: BoxFit.contain,
+              //         image: AssetImage(
+              //             'assets/images/task_image.png')),
+              //   ),
+              //
+              // ),
 
             16.verticalSpace,
               Text(
@@ -157,7 +255,7 @@ class _TodoDetailsPageState extends State<TodoDetailsPage> {
               SizedBox(height: 16.h),
               Center(
                 child: QrImageView(
-                  data: "${widget.task.id}", // Replace with your data
+                  data: widget.task.id, // Replace with your data
                   version: QrVersions.auto,
                   size: 400.w,
                 ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,28 +7,38 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tasky/config/APIs/apis_urls.dart';
 import 'package:tasky/config/theme/app_theme.dart';
-import 'dart:io';
+import 'package:tasky/features/todo/domain/entities/todo.dart';
+import 'package:tasky/features/todo/presentation/widgets/data_picker_field.dart';
 import 'package:intl/intl.dart';
-import '../../domain/entities/todo.dart';
-import '../cubit/add_todo_cubit/add_todo_cubit.dart';
-import '../widgets/data_picker_field.dart';
 
+import '../cubit/update_todo_cubit/update_todo_cubit.dart';
 
-class AddTodoPage extends StatefulWidget {
-  const AddTodoPage({super.key});
+class EditTaskPage extends StatefulWidget {
+  final Todo task;
+  const EditTaskPage({super.key, required this.task});
   @override
-  AddTodoPageState createState() => AddTodoPageState();
+  EditTaskPageState createState() => EditTaskPageState();
 }
 
-class AddTodoPageState extends State<AddTodoPage> {
+class EditTaskPageState extends State<EditTaskPage> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
-  TextEditingController dateController = TextEditingController();
-  String? priority = "low";
-  DateTime selectedData = DateTime.now();
+  late TextEditingController titleController;
+  late TextEditingController descriptionController;
+  late TextEditingController dateController;
+  String? priority ;
+  late DateTime selectedData = DateTime.now();
+  @override
+  void initState() {
+    titleController = TextEditingController(text: widget.task.title);
+    descriptionController =
+        TextEditingController(text: widget.task.description);
+    dateController = TextEditingController(
+        text: DateFormat('d MMMM, yyyy').format(widget.task.createdAt));
+    super.initState();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -40,37 +52,39 @@ class AddTodoPageState extends State<AddTodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CreateTodoCubit, AddTodoState>(
+    return BlocConsumer<UpdateTodoCubit, UpdateTodoState>(
       listener: (context, state) {
-        if (state is CreateTodoSuccess) {
-          context.pop();
+        if (state is UpdateTodoSuccess) {
+          context.go("/todos");
           Fluttertoast.showToast(
-            msg: state.message.toString(),
+            msg: "This Task is updated",
             fontSize: 16,
             backgroundColor: Colors.black,
           );
-        } else if (state is CreateTodoError) {
-         // context.pop();
+        } else if (state is UpdateTodoFailure) {
+          // context.pop();
           Fluttertoast.showToast(
             msg: state.message.toString(),
             fontSize: 16,
             backgroundColor: Colors.black,
           );
         }
-        if(state is UploadImageSuccess){
-        // context.pop();
-          BlocProvider.of<CreateTodoCubit>(context).addTodo(
-            todo: Todo(
-              title: titleController.text,
-              description: descriptionController.text.trim(),
-              imageUrl: state.imagePath,
-              createdAt: selectedData,
-              priority: priority ?? "low", id: '', status: '', user: '', updatedAt: selectedData,
-            )
-            );
-        }
-        else if (state is UploadImageError) {
-         // context.pop();
+        if (state is UploadUpdatedImageSuccess) {
+          // context.pop();
+          BlocProvider.of<UpdateTodoCubit>(context).updateTodo(
+              todo: Todo(
+            title: titleController.text,
+            description: descriptionController.text,
+            imageUrl: state.imagePath,
+            createdAt: selectedData,
+            priority: priority ?? widget.task.priority,
+            id: widget.task.id,
+            status: '',
+            user: '',
+            updatedAt: DateTime.now(),
+          ));
+        } else if (state is UploadUpdatedImageError) {
+          // context.pop();
           Fluttertoast.showToast(
             msg: 'حدث خطأ أثناء محاولة رفع الصورة',
             fontSize: 16,
@@ -83,7 +97,7 @@ class AddTodoPageState extends State<AddTodoPage> {
           appBar: AppBar(
             titleSpacing: 1,
             title: Text(
-              "Add new task",
+              "Edit task",
               style: TextStyle(
                   fontSize: 16.sp,
                   color: Colors.black,
@@ -91,7 +105,7 @@ class AddTodoPageState extends State<AddTodoPage> {
             ),
             leading: IconButton(
               onPressed: () {
-              context.pop(true);
+                context.pop(true);
               },
               icon: Image.asset(
                 "assets/icons/left_arrow.png",
@@ -99,18 +113,8 @@ class AddTodoPageState extends State<AddTodoPage> {
               ),
             ),
           ),
-          // appBar: AppBar(
-          //   forceMaterialTransparency: true,
-          //   title: Text(
-          //     'Add new task',
-          //     style: TextStyle(
-          //       color: Colors.black,
-          //       fontSize: 20.w,
-          //       fontWeight: FontWeight.w700,
-          //     ),
-          //   ),
-          // ),
-          body:state is CreateTodoLoading ? Center(child: Image.asset("assets/images/loading.gif",width: 100,height: 100,),): Padding(
+
+          body: Padding(
             padding: EdgeInsets.all(16.w),
             child: SingleChildScrollView(
               child: Column(
@@ -129,34 +133,27 @@ class AddTodoPageState extends State<AddTodoPage> {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: _image == null
-                            ? Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_photo_alternate_outlined,
-                                color: AppTheme.primaryColor,
-                                size: 24.sp,
-                              ),
-                              8.horizontalSpace,
-                              Text(
-                                'Add Img',
-                                style: TextStyle(
-                                  color: AppTheme.primaryColor,
-                                  fontSize: 19.sp,
-                                  fontWeight: FontWeight.w500
+                            ? Container(
+                                width: double.infinity,
+                                height: 225.h,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    fit: BoxFit.fill,
+                                    image: NetworkImage(
+                                        '${ApisStrings.imageBaseUrl}${widget.task.imageUrl}'),
+                                  ),
+                                ),
+
+                              )
+                            : FittedBox(
+                                fit: BoxFit.cover,
+                                child: Image.file(
+                                  width: 200,
+                                  height: 200,
+                                  File(_image!.path),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ],
-                          ),
-                        )
-                            : FittedBox(
-                          fit: BoxFit.cover,
-                          child: Image.file(width: 200,height: 200,
-                            File(_image!.path),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
                       ),
                     ),
                   ),
@@ -168,10 +165,11 @@ class AddTodoPageState extends State<AddTodoPage> {
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w400),
                   ),
-                 8.verticalSpace,
+                  8.verticalSpace,
                   TextField(
                     controller: titleController,
-                    style: TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w400),
+                    style:
+                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
                     decoration: InputDecoration(
                       hintText: 'Enter title here...',
                       border: OutlineInputBorder(
@@ -190,7 +188,8 @@ class AddTodoPageState extends State<AddTodoPage> {
                   8.verticalSpace,
                   TextField(
                     controller: descriptionController,
-                    style: TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w400),
+                    style:
+                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
                     maxLines: 6,
                     decoration: InputDecoration(
                       hintText: 'Enter description here...',
@@ -274,7 +273,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                       setState(() {
                         selectedData = p0;
                         dateController.text =
-                        "${p0.year}-${p0.month}-${p0.day}";
+                            "${p0.year}-${p0.month}-${p0.day}";
                       });
                       debugPrint(dateController.text);
                     },
@@ -284,25 +283,35 @@ class AddTodoPageState extends State<AddTodoPage> {
                     onPressed: () {
                       // Add task logic here
                       if (_image == null) {
-                        Fluttertoast.showToast(
-                          msg: "Pick your image",
-                          fontSize: 16,
-                          backgroundColor: Colors.black,
-                        );
+                        BlocProvider.of<UpdateTodoCubit>(context).updateTodo(
+                            todo: Todo(
+                          title: titleController.text,
+                          description: descriptionController.text,
+                          imageUrl: widget.task.imageUrl,
+                          createdAt: selectedData,
+                          priority: priority ?? widget.task.priority,
+                          id: widget.task.id,
+                          status: '',
+                          user: '',
+                          updatedAt: DateTime.now(),
+                        ));
                       } else {
-                        if (titleController.text.isEmpty ||
-                            descriptionController.text.isEmpty) {
-                          Fluttertoast.showToast(
-                            msg: "Must Be Enter Your title and Discreption",
-                            fontSize: 16,
-                            backgroundColor: Colors.black,
-                          );
-                        } else {
-                          BlocProvider.of<CreateTodoCubit>(context).uploadImage(imageFile: _image!);
-
-
-                        }
+                        BlocProvider.of<UpdateTodoCubit>(context)
+                            .uploadImage(imageFile: _image!);
                       }
+                      // else {
+                      //   if (titleController.text.isEmpty ||
+                      //       descriptionController.text.isEmpty) {
+                      //     Fluttertoast.showToast(
+                      //       msg: "Must Be Enter Your title and Discreption",
+                      //       fontSize: 16,
+                      //       backgroundColor: Colors.black,
+                      //     );
+                      //   } else {
+                      //     BlocProvider.of<UpdateTodoCubit>(context)
+                      //         .uploadImage(imageFile: _image!);
+                      //   }
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(double.infinity, 50.h),
@@ -311,7 +320,7 @@ class AddTodoPageState extends State<AddTodoPage> {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: Text('Add task',
+                    child: Text('Edit task',
                         style: TextStyle(
                           fontSize: 18.sp,
                           color: Colors.white,
@@ -357,6 +366,7 @@ class AddTodoPageState extends State<AddTodoPage> {
     );
   }
 }
+
 
 // For formatting date
 

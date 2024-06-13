@@ -23,6 +23,8 @@ abstract class TodoRemoteDataSource {
   });
   Future<void> updateTodo(TodoModel todo);
   Future<void> deleteTodo(String id);
+  Future<void> logout();
+  Future<TodoModel> fetchSingleTodos(String id);
 }
 
 class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
@@ -38,7 +40,6 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
     );
 
     if (response.statusCode == 200 ||response.statusCode == 201) {
-      print(response.data);
       return (response.data as List)
           .map((todo) => TodoModel.fromJson(todo))
           .toList();
@@ -78,21 +79,33 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
 
   @override
   Future<void> updateTodo(TodoModel todo) async {
-    final response = await DioHelper.dio.put(
-      'https://your-api-url.com/todos/${todo.id}',
-      data: todo.toJson(),
-    );
+    try {
+      final response = await DioHelper.dio.put(
+        "${ApisStrings.todosUrl}/${todo.id}",
+        data: {
+          'image': todo.imageUrl,
+          'title': todo.title,
+          'desc': todo.description,
+          'priority': todo.priority,
+          'dueDate': DateFormat('d MMMM, yyyy').format(todo.createdAt).toString(),
+          "user": AppSharedPreferences.getString(key: "userID")
+        },
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update todo');
+      if (response.statusCode == 200) {
+
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
   @override
   Future<void> deleteTodo(String id) async {
-    final response = await DioHelper.dio.delete('https://your-api-url.com/todos/$id');
+    final response = await DioHelper.dio.delete("${ApisStrings.todosUrl}/$id");
 
     if (response.statusCode != 200) {
+      debugPrint("the data");
       throw Exception('Failed to delete todo');
     }
   }
@@ -113,7 +126,7 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
     try {
       Response response = await DioHelper.dio.post(
         ApisStrings.uploadImageUrl,
-       // 'https://todo.iraqsapp.com/upload/image',
+
         data: formData,
         options: Options(
           headers: {
@@ -136,6 +149,29 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
     } catch (e) {
       debugPrint('Error uploading image: $e');
       return 'Error';
+    }
+  }
+
+  @override
+  Future<TodoModel> fetchSingleTodos(String id) async {
+    final response = await DioHelper.dio.get(
+      "${ApisStrings.todosUrl}/$id",
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return TodoModel.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load todos');
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    final response = await DioHelper.dio.post(ApisStrings.logoutUrl,data: {'token': AppSharedPreferences.getString(key: AppStrings.refreshToken)});
+
+    if (response.statusCode != 200) {
+      debugPrint("the data");
+      throw Exception('Failed to delete todo');
     }
   }
 

@@ -13,4 +13,6 @@ abstract class TodoRepository {
   });
   Future<Either<Failure, void>> updateTodo(Todo todo);
   Future<Either<Failure, void>> deleteTodo(String id);
+  Future<Either<Failure, void>> logout();
+  Future<Either<Failure, Todo>> fetchSingleTodos(String id);
 }

@@ -57,3 +57,23 @@ class UploadImageError extends TodoState {
   @override
   List<Object> get props => [message];
 }
+
+final class DeleteTodoIsLoading extends TodoState {}
+
+final class DeleteTodoSuccess extends TodoState {}
+
+final class DeleteTodoFailure extends TodoState {
+final String message;
+
+const DeleteTodoFailure({required this.message});
+}
+
+final class LogoutLoading extends TodoState {}
+
+final class LogoutSuccess extends TodoState {}
+
+final class LogoutFailure extends TodoState {
+final String message;
+
+const LogoutFailure({required this.message});
+}

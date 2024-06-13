@@ -31,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _experienceYearsController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  bool securTogel = true;
+  bool passwordV = true;
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
@@ -46,7 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Center(child: CircularProgressIndicator())),
             ),
           );
-          Navigator.of(context).pop();
+       // Navigator.of(context).pop();
         } else if (state is AuthLoaded) {
           Fluttertoast.showToast(
             msg: "تم التسجيل بنجاح",
@@ -54,6 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
             backgroundColor: Colors.white,
           );
         } else if (state is AuthFailure) {
+          context.pop();
           Fluttertoast.showToast(
             msg: state.message,
             fontSize: 16,
@@ -222,10 +223,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   suffixIcon: IconButton(
                                       onPressed: () {
                                         setState(() {
-                                          securTogel = !securTogel;
+                                          passwordV = !passwordV;
                                         });
                                       },
-                                      icon: securTogel == false
+                                      icon: passwordV == false
                                           ? const Icon(
                                         Icons.visibility_outlined,
                                         size: 24,

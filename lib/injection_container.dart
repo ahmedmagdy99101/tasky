@@ -13,7 +13,9 @@ import 'features/profile/presentation/cubit/profile_cubit.dart';
 import 'features/todo/data/datasources/todo_remote_data_source.dart';
 import 'features/todo/data/repositories/todo_repository_impl.dart';
 import 'features/todo/domain/usecases/get_todos_usecase.dart';
+import 'features/todo/presentation/cubit/single_todo/single_todo_cubit.dart';
 import 'features/todo/presentation/cubit/todo_cubit.dart';
+import 'features/todo/presentation/cubit/update_todo_cubit/update_todo_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -55,6 +57,12 @@ void setup() {
   sl.registerFactory(() => TodoCubit(
     repository: sl.get<TodoRepositoryImpl>(),
   ));
+  sl.registerFactory(() => UpdateTodoCubit(
+    sl.get<TodoRepositoryImpl>(),
+  ));
   sl.registerFactory(() => ProfileCubit(sl.get<ProfileDataUseCase>()));
   sl.registerFactory(() => CreateTodoCubit( repository: sl.get<TodoRepositoryImpl>(),));
+  sl.registerFactory(() => SingleTodoCubit(
+    sl.get<TodoRepositoryImpl>(),
+  ));
 }

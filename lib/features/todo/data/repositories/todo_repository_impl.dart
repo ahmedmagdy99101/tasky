@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/todo.dart';
@@ -58,8 +59,9 @@ class TodoRepositoryImpl implements TodoRepository {
   Future<Either<Failure, void>> deleteTodo(String id) async {
     try {
       await remoteDataSource.deleteTodo(id);
-      return const Right(null);
+      return const Right(dynamic);
     } catch (e) {
+      debugPrint(e.toString());
       return const Left(ServerFailure(""));
     }
   }
@@ -71,6 +73,26 @@ class TodoRepositoryImpl implements TodoRepository {
       return Right(result);
     } catch (e) {
       return const Left(ServerFailure(""));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Todo>> fetchSingleTodos(String id) async {
+    try {
+      final result = await remoteDataSource.fetchSingleTodos(id);
+      return Right(result);
+    } catch (e) {
+      return const Left(ServerFailure(""));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logout()async {
+    try {
+      final result = await remoteDataSource.logout();
+      return Right(result);
+    } catch (e) {
+      return const Left(ServerFailure("error"));
     }
   }
 }
